@@ -27,6 +27,12 @@ This action builds an autotools project using the `autoreconf` -> `configure` ->
     # Installs to $GITHUB_WORKSPACE/build-dir by default.
     # Default: false
     install: ''
+
+    # The patch file to use when we are building an OSP project.
+    patch-file: ''
+
+    # The user_settings.h file to copy in when when building.
+    user-settings: ''
 ```
 
 # Example
