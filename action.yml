@@ -25,6 +25,11 @@ inputs:
   patch-file:
     description: 'The patch file to use when we are building an OSP project.'
 
+  # wolfSSL specific
+  user-settings:
+    description: 'The user_settings.h file to use.'
+    default: ''
+
 runs:
   using: 'composite'
   steps:
@@ -45,6 +50,12 @@ runs:
         working-directory: ${{ inputs.path }}
         if: inputs.patch-file
         run: patch -p1 < ${{ inputs.patch-file }}
+
+      # Copy user_settings.h file
+      - shell: bash
+        working-directory: ${{ inputs.path }}
+        if: inputs.user-settings
+        run: cp ${{ inputs.user-settings }} user_settings.h
 
       # Check if autogen.sh exists
       - uses: andstor/file-existence-action@v2
