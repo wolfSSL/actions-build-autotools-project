@@ -1,0 +1,88 @@
+name: 'Build a project'
+
+description: 'Checkout and build a project project using the configure and make cycle on Linux or MacOS.'
+
+inputs:
+  # Inputs for the checkout step.
+  repository:
+    description: 'Repository name with owner. For example, actions/checkout'
+  ref:
+    description: 'The reference to checkout.'
+  path:
+    # Set default value as we use it with working-directory too
+    default: '.'
+  
+  # Our inputs
+  configure:
+    description: 'The configuration that the library should be built with.'
+    default: '' 
+  check:
+    description: 'Should we run make check.'
+    default: true
+  install:
+    description: 'Should we run make install. Installs to $GITHUB_WORKSPACE/build-dir.'
+    default: false
+  patch-file:
+    description: 'The patch file to use when we are building an OSP project.'
+
+runs:
+  using: 'composite'
+  steps:
+      # Checkout project
+      - uses: actions/checkout@v3
+        with:
+          repository:  ${{ inputs.repository }}
+          ref:  ${{ inputs.ref }}
+          path:  ${{ inputs.path }}
+
+      # Install dependencies
+      - shell: bash
+        if: runner.os == 'macOS'
+        run: brew install automake libtool
+
+      # Apply patch file
+      - shell: bash
+        working-directory: ${{ inputs.path }}
+        if: inputs.patch-file
+        run: patch -p1 < ${{ inputs.patch-file }}
+
+      # Check if autogen.sh exists
+      - uses: andstor/file-existence-action@v2
+        id: check_autogen
+        with:
+          files: '${{ inputs.path }}/autogen.sh'
+
+      # Run autogen.sh
+      - shell: bash
+        working-directory: ${{ inputs.path }}
+        if: steps.check_autogen.outputs.files_exists == 'true'
+        run: ./autogen.sh
+
+      # Fall back on autoreconf
+      - shell: bash
+        working-directory: ${{ inputs.path }}
+        if: steps.check_autogen.outputs.files_exists == 'false'
+        run: autoreconf -ivf
+
+      # Configure
+      - shell: bash
+        working-directory: ${{ inputs.path }}
+        run: ./configure ${{ inputs.configure }} --prefix=$GITHUB_WORKSPACE/build-dir
+
+      # Compile
+      - shell: bash
+        working-directory: ${{ inputs.path }}
+        run: make -j
+
+      # Run tests
+      - shell: bash
+        working-directory: ${{ inputs.path }}
+        if: inputs.check
+        run: make check
+
+      # Install
+      - shell: bash
+        working-directory: ${{ inputs.path }}
+        if: inputs.install
+        run: make install
+ 
