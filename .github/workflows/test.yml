@@ -1,0 +1,25 @@
+name: Testing
+
+on:
+  pull_request:
+
+jobs:
+  build_wolfssl:
+    strategy:
+      matrix:
+        runs-on: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.runs-on }}
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v3
+
+      - name: Build and test wolfSSL
+        uses: ./
+        with:
+          repository: wolfSSL/wolfssl
+          ref: master
+          path: wolfssl
+          configure:
+          check: true
+          install: true
