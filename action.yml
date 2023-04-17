@@ -87,13 +87,23 @@ runs:
 
       # Run tests
       - shell: bash
+        id: check
         working-directory: ${{ inputs.path }}
         if: inputs.check
         run: make check
+
+      # Print errors 
+      - shell: bash
+        working-directory: ${{ inputs.path }}
+        if: ${{ failure() && steps.check.outcome == 'failure' }}
+        run: |
+          if [ -f test-suite.log ] ; then
+            cat test-suite.log
+          fi
 
       # Install
       - shell: bash
         working-directory: ${{ inputs.path }}
         if: inputs.install
         run: make install
- 
+
