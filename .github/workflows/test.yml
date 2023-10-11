@@ -23,3 +23,24 @@ jobs:
           configure:
           check: true
           install: true
+
+  build_wolfssl_no_check:
+    strategy:
+      matrix:
+        runs-on: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.runs-on }}
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v3
+
+      - name: Build wolfSSL
+        uses: ./
+        with:
+          repository: wolfSSL/wolfssl
+          ref: master
+          path: wolfssl
+          configure:
+          check: false
+          install: false
+
