@@ -62,7 +62,7 @@ runs:
         run: cp ${{ inputs.user-settings }} user_settings.h
 
       # Check if autogen.sh exists
-      - uses: andstor/file-existence-action@v2
+      - uses: andstor/file-existence-action@v3
         id: check_autogen
         with:
           files: '${{ inputs.path }}/autogen.sh'
